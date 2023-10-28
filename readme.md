@@ -7,6 +7,8 @@ All code is within program.cs's main function. I did this to make it easier for 
 knowledge to be get a vague understanding of the source code and find it trustworthy, although this was
 a very dumb idea looking back.
 
+## THIS REQUIRES [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-8.0.100-rc.2-windows-x64-installer) TO BE INSTALLED.
+
 >"This code sucks"
 
 I know.
