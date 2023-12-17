@@ -27,6 +27,8 @@ public class Installer
     private const string MODS_FOLDER = "mods";
     private const string CONFIG_FOLDER = "config";
     private const string OPTIONS_FILE = "options.txt";
+    private const string JOURNEYMAP_FOLDER = "journeymap";
+    private const string JOURNEYMAP_VERSION = "5.9";
     
     private readonly string CURRENT_DIRECTORY;
     private readonly string APP_DATA_DIR;
@@ -82,26 +84,26 @@ public class Installer
         CreateFolder(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER), MODS_FOLDER); // mods
         CreateFolder(Path.Combine(DOT_MINECRAFT_FOLDER, VERSIONS_FOLDER), FABRIC_FOLDER); // fabric
         CreateFolder(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER), CONFIG_FOLDER); // config
+        CreateFolder(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER), JOURNEYMAP_FOLDER); // journeymap
+        CreateFolder(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, JOURNEYMAP_FOLDER), CONFIG_FOLDER); // journeymap config
+        CreateFolder(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, JOURNEYMAP_FOLDER, CONFIG_FOLDER), JOURNEYMAP_VERSION); // journeymap version
 
         // Start moving files.
         CopyOptionsFile();
+        CopyJourneymapFiles();
         CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "fabric", FABRIC_JAR), Path.Combine(DOT_MINECRAFT_FOLDER, VERSIONS_FOLDER, FABRIC_FOLDER, FABRIC_JAR)); // im tired of making const's pa pa.
         CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "fabric", FABRIC_JSON), Path.Combine(DOT_MINECRAFT_FOLDER, VERSIONS_FOLDER, FABRIC_FOLDER, FABRIC_JSON)); // Fabric .json
         CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "ComplementaryUnbound.zip"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, SHADERPACK_FOLDER, "ComplementaryUnbound.zip")); // complementary unbound shaderpack.
         CopyShaderConfig();
         CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "the_CraftTM.zip"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, RESOURCEPACK_FOLDER, "The_CraftTM.zip")); // Resourcepack
+        CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "Better Leaves.zip"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, RESOURCEPACK_FOLDER, "Better Leaves.zip")); // Resourcepack TWO!!!
+        CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "servers.dat"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, "servers.dat")); // Servers.dat
 
         // Install all mods.
         string modsSource = Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, MODS_FOLDER);
         string[] mods = Directory.GetFiles(modsSource);
         foreach(string mod in mods){
             string modName = Path.GetFileName(mod);
-
-            // Distant Horizons is an optional install.
-            if(modName == "dh.jar"){
-                continue;
-            }
-
             string modDestination = Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, MODS_FOLDER, modName);
 
             CopyFile(mod, modDestination);
@@ -118,7 +120,6 @@ public class Installer
         Console.WriteLine();
         Console.WriteLine("Installer has finished. Press any key to exit..");
         Console.ReadKey();
-
     }
 
     /// <summary>
@@ -259,5 +260,20 @@ public class Installer
 
         Console.ForegroundColor = ConsoleColor.Blue;
         Console.WriteLine("launcher_profiles.json edited successfully");
+    }
+
+    /// <summary>
+    /// Runs a foreach loop that copies all the files from the current dir
+    /// journeymap folder to the custom installation's journeymap folder.
+    /// </summary>
+    private void CopyJourneymapFiles(){
+        string filesSource = Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, JOURNEYMAP_FOLDER);
+        string[] files = Directory.GetFiles(filesSource);
+        foreach(string file in files){
+            string fileName = Path.GetFileName(file);
+            string fileDestination = Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, JOURNEYMAP_FOLDER, CONFIG_FOLDER, JOURNEYMAP_VERSION, fileName);
+
+            CopyFile(file, fileDestination);
+        }
     }
 }
