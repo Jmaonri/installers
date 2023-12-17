@@ -5,7 +5,7 @@ This installer will also create a profile in your minecraft launcher.
 
 ## THIS REQUIRES [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-8.0.100-rc.2-windows-x64-installer) TO BE INSTALLED.
 
-##Building from source
+## Building from source
 
 Clone the repository.
 ```
