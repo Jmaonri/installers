@@ -1,10 +1,5 @@
-using System;
-using System.Net;
-using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Reflection;
-using System.Data.SqlTypes;
 
 /// <summary>
 /// This class holds all the methods needed to create directories, move
@@ -12,31 +7,27 @@ using System.Data.SqlTypes;
 /// </summary>
 public class Installer
 {
-    private const string DOT_MINECRAFT_FOLDER_NAME = ".minecraft";
-    private readonly string DOT_MINECRAFT_FOLDER;
-
-
-    private const string LAUNCHER_PROFILES_JSON = "launcher_profiles.json";
-    private const string VERSIONS_FOLDER = "versions";
-    private const string FABRIC_FOLDER = "fabric-loader-0.14.24-1.20.1";
-    private const string CUSTOM_INSTALLATIONS_FOLDER = "custom installations";
     private const string PREVIOUS_CUSTOM_INSTALLATION_FOLDER = "cobblemon 1.20.1";
+    private const string CUSTOM_INSTALLATIONS_FOLDER = "custom installations";
+    private const string LAUNCHER_PROFILES_JSON = "launcher_profiles.json";
+    private const string FABRIC_FOLDER = "fabric-loader-0.14.24-1.20.1";
     private const string CUSTOM_INSTALLATION_FOLDER = "The Bros v1";
+    private const string DOT_MINECRAFT_FOLDER_NAME = ".minecraft";
     private const string RESOURCEPACK_FOLDER = "resourcepacks";
     private const string SHADERPACK_FOLDER = "shaderpacks";
-    private const string MODS_FOLDER = "mods";
-    private const string CONFIG_FOLDER = "config";
-    private const string OPTIONS_FILE = "options.txt";
     private const string JOURNEYMAP_FOLDER = "journeymap";
+    private const string ADDITIONAL_FOLDER = "additional";
+    private const string VERSIONS_FOLDER = "versions";
+    private const string OPTIONS_FILE = "options.txt";
     private const string JOURNEYMAP_VERSION = "5.9";
+    private const string CONFIG_FOLDER = "config";
+    private const string LOADER_FOLDER = "loader";
+    private const string FILES_FOLDER = "files";
+    private const string MODS_FOLDER = "mods";
     
+    private readonly string DOT_MINECRAFT_FOLDER;
     private readonly string CURRENT_DIRECTORY;
     private readonly string APP_DATA_DIR;
-    
-    private const string FILES_FOLDER = "files";
-    private const string FABRIC_JAR = "fabric-loader-0.14.24-1.20.1.jar";
-    private const string FABRIC_JSON = "fabric-loader-0.14.24-1.20.1.json";
-
 
     public Installer()
     {
@@ -53,6 +44,8 @@ public class Installer
         if(!PromptInstallation(prompt)){
             Environment.Exit(0);
         }
+
+        Console.Clear();
 
         // If .minecraft directory is not found, print error and exit installer.
         if (!Directory.Exists(Path.Combine(DOT_MINECRAFT_FOLDER))){
@@ -90,29 +83,29 @@ public class Installer
 
         // Start moving files.
         CopyOptionsFile();
-        CopyJourneymapFiles();
-        CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "fabric", FABRIC_JAR), Path.Combine(DOT_MINECRAFT_FOLDER, VERSIONS_FOLDER, FABRIC_FOLDER, FABRIC_JAR)); // im tired of making const's pa pa.
-        CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "fabric", FABRIC_JSON), Path.Combine(DOT_MINECRAFT_FOLDER, VERSIONS_FOLDER, FABRIC_FOLDER, FABRIC_JSON)); // Fabric .json
-        CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "ComplementaryUnbound.zip"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, SHADERPACK_FOLDER, "ComplementaryUnbound.zip")); // complementary unbound shaderpack.
         CopyShaderConfig();
-        CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "the_CraftTM.zip"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, RESOURCEPACK_FOLDER, "The_CraftTM.zip")); // Resourcepack
-        CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "Better Leaves.zip"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, RESOURCEPACK_FOLDER, "Better Leaves.zip")); // Resourcepack TWO!!!
-        CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "servers.dat"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, "servers.dat")); // Servers.dat
 
-        // Install all mods.
-        string modsSource = Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, MODS_FOLDER);
-        string[] mods = Directory.GetFiles(modsSource);
-        foreach(string mod in mods){
-            string modName = Path.GetFileName(mod);
-            string modDestination = Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, MODS_FOLDER, modName);
-
-            CopyFile(mod, modDestination);
-        }
-
-        CopyFile(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "iris.properties"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, CONFIG_FOLDER, "iris.properties"));
-
+        CopyAllFromFolder(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, RESOURCEPACK_FOLDER), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, RESOURCEPACK_FOLDER)); // Resourcepacks.
         Console.ForegroundColor = ConsoleColor.Blue;
-        Console.WriteLine("Installed all mods");
+        Console.WriteLine("Installed resourcepacks");
+
+        CopyAllFromFolder(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, SHADERPACK_FOLDER), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, SHADERPACK_FOLDER)); // Shaderpacks.
+        Console.WriteLine("Installed shaderpacks");
+
+        CopyAllFromFolder(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, ADDITIONAL_FOLDER, JOURNEYMAP_FOLDER), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, JOURNEYMAP_FOLDER, CONFIG_FOLDER, JOURNEYMAP_VERSION)); // Journeymap files.
+        Console.WriteLine("Installed journeymap configs");
+
+        CopyAllFromFolder(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, LOADER_FOLDER), Path.Combine(DOT_MINECRAFT_FOLDER, VERSIONS_FOLDER, FABRIC_FOLDER)); // Fabric.
+        Console.WriteLine("Installed fabric");
+
+        CopyAllFromFolder(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, MODS_FOLDER), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, MODS_FOLDER)); // Mods.
+        Console.WriteLine("Installed mods");
+
+        File.Copy(Path.Join(CURRENT_DIRECTORY, FILES_FOLDER, ADDITIONAL_FOLDER, "iris.properties"), Path.Join(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, CONFIG_FOLDER, "iris.properties"), true); // iris.properties
+        Console.WriteLine("Installed iris config");
+
+        File.Copy(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, ADDITIONAL_FOLDER, "servers.dat"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, "servers.dat"), true); // servers.dat
+        Console.WriteLine("Installed servers.dat");
 
         EditLauncherProfiles();
 
@@ -159,26 +152,8 @@ public class Installer
     }
 
     /// <summary>
-    /// Copies a file. Warns if file already exists in destination.
-    /// </summary>
-    /// <param name="fileOrigin">The file to be copied. This is a path.</param>
-    /// <param name="fileDestination">The destination of the copied file. This is a path</param>
-    private static void CopyFile(string fileOrigin, string fileDestination){
-        if(File.Exists(fileDestination)){
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"{fileDestination} already exists. Skipping.");
-            return;
-        }
-
-        File.Copy(fileOrigin, fileDestination);
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.WriteLine($"{fileDestination} installed.");
-    }
-
-    /// <summary>
     /// Copies the 'options.txt' file from either an older custom installation 
     /// or the root of the .minecraft folder to the new custom installation.
-    /// Warns if file already exists at destination.
     /// </summary>
     private void CopyOptionsFile(){
         if(!File.Exists(Path.Combine(DOT_MINECRAFT_FOLDER, OPTIONS_FILE))){
@@ -187,28 +162,20 @@ public class Installer
             return;
         }
 
-        if (File.Exists(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, OPTIONS_FILE))){
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("options.txt already exists. Skipping.");
-            return;
-        }
-
         // Priorotize previous 'custom installation'. For this time, cobblemon.
         if (File.Exists(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, PREVIOUS_CUSTOM_INSTALLATION_FOLDER, OPTIONS_FILE))){
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("Retrieving options.txt file from cobblemon folder");
-            CopyFile(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, PREVIOUS_CUSTOM_INSTALLATION_FOLDER, OPTIONS_FILE), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, OPTIONS_FILE));
+            File.Copy(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, PREVIOUS_CUSTOM_INSTALLATION_FOLDER, OPTIONS_FILE), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, OPTIONS_FILE), true);
             return;
         }
 
-        CopyFile(Path.Combine(DOT_MINECRAFT_FOLDER, OPTIONS_FILE), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, OPTIONS_FILE));
-        Console.ForegroundColor = ConsoleColor.Blue;
+        File.Copy(Path.Combine(DOT_MINECRAFT_FOLDER, OPTIONS_FILE), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, OPTIONS_FILE), true);
         Console.WriteLine("Copied options.txt file to new installation");
     }
 
     /// <summary>
     /// Copies the complementary unbound shader config file from an older custom installation.
-    /// Warns if file already exists.
     /// </summary>
     private void CopyShaderConfig(){
         if (!File.Exists(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, PREVIOUS_CUSTOM_INSTALLATION_FOLDER, SHADERPACK_FOLDER, "ComplementaryUnbound.zip.txt"))){
@@ -217,15 +184,9 @@ public class Installer
             return;
         }
 
-        if(File.Exists(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, SHADERPACK_FOLDER, "ComplementaryUnbound.zip.txt"))){
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Shader config file already exists. Skipping.");
-            return;
-        }
-
-        File.Copy(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, PREVIOUS_CUSTOM_INSTALLATION_FOLDER, SHADERPACK_FOLDER, "ComplementaryUnbound.zip.txt"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, SHADERPACK_FOLDER, "ComplementaryUnbound.zip.txt"));
+        File.Copy(Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, PREVIOUS_CUSTOM_INSTALLATION_FOLDER, SHADERPACK_FOLDER, "ComplementaryUnbound.zip.txt"), Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, SHADERPACK_FOLDER, "ComplementaryUnbound.zip.txt"), true);
         Console.ForegroundColor = ConsoleColor.Blue;
-        Console.WriteLine("Copied shaderpack config file to new installation");
+        Console.WriteLine("Retrieving shaderconfig from cobblemon installation");
     }
 
     /// <summary>
@@ -233,7 +194,7 @@ public class Installer
     /// the directory of the new installation, a custom logo, and java args.
     /// </summary>
     private void EditLauncherProfiles(){
-        string profileLogo = File.ReadAllText(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, "image.txt"));
+        string profileLogo = File.ReadAllText(Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, ADDITIONAL_FOLDER, "launcherImage.txt"));
 
         string installationDirectory = Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER);
         string json = File.ReadAllText(Path.Combine(DOT_MINECRAFT_FOLDER, LAUNCHER_PROFILES_JSON));
@@ -263,17 +224,18 @@ public class Installer
     }
 
     /// <summary>
-    /// Runs a foreach loop that copies all the files from the current dir
-    /// journeymap folder to the custom installation's journeymap folder.
+    /// Copies all files from the specified 'originFolder' into an array, followed by iterating through each file using a foreach loop.
+    /// Each file is then duplicated to the 'destinationFolder', with existing files being overwritten if encountered.
     /// </summary>
-    private void CopyJourneymapFiles(){
-        string filesSource = Path.Combine(CURRENT_DIRECTORY, FILES_FOLDER, JOURNEYMAP_FOLDER);
-        string[] files = Directory.GetFiles(filesSource);
+    /// <param name="originFolder">The source folder containing the files to be duplicated</param>
+    /// <param name="destinationFolder">The target folder where files will be duplicated</param>
+    private static void CopyAllFromFolder(string originFolder, string destinationFolder){
+        string[] files = Directory.GetFiles(originFolder);
         foreach(string file in files){
             string fileName = Path.GetFileName(file);
-            string fileDestination = Path.Combine(DOT_MINECRAFT_FOLDER, CUSTOM_INSTALLATIONS_FOLDER, CUSTOM_INSTALLATION_FOLDER, JOURNEYMAP_FOLDER, CONFIG_FOLDER, JOURNEYMAP_VERSION, fileName);
+            string fileDestination = Path.Combine(destinationFolder, fileName);
 
-            CopyFile(file, fileDestination);
+            File.Copy(file, fileDestination, true);
         }
     }
 }
